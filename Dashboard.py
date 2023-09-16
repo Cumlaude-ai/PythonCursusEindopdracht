@@ -70,7 +70,7 @@ def make_marks_time_slider(mini, maxi):
         current += step
     return ret
         
-class interactiveGraph():
+class interactiveGraph:
     def __init__(self,title,graph):
         self.title = title
         self.graph = graph
@@ -81,7 +81,7 @@ class interactiveGraph():
         max_epoch = list(marks.keys())[-1]
         self.TimeframeSlider.append(html.Div(dcc.RangeSlider(marks=marks,min=min_epoch,max=max_epoch,step=(max_epoch - min_epoch) / (len(list(marks.keys())) * 3),value=[min_epoch, max_epoch])))
 
-class graph():
+class graph:
     def __init__(self,title,graph):
         self.title = title
         self.graph = graph
