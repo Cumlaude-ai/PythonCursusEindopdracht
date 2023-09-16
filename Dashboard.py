@@ -50,186 +50,184 @@ waterstand_fig = px.line(df, x='Maand', y='Waterstand (cm)', color='Jaar',
               title='Maandelijkse Waterstanden Over de Jaren',
               labels={'Waterstand (cm)': 'Waterstand (cm)', 'Jaar': 'Jaar'})
 
-#Real data
-KNMI_df = pd.read_csv("https://raw.githubusercontent.com/Cumlaude-ai/Python_Cursus/main/data/KNMI_De_Bilt.csv", skiprows=51, skipinitialspace = True )
+def make_marks_time_slider(mini, maxi):
+    step = relativedelta.relativedelta(months=+1)
+    start = datetime(year=mini.year, month=1, day=1)
+    end = datetime(year=maxi.year, month=maxi.month, day=30)
+    ret = {}
 
-KNMI_df.columns = ["STN","Datum","Vectorgemiddelde windrichting","Vectorgemiddelde windsnelheid","Etmaalgemiddelde windsnelheid","Hoogste uurgemiddelde windsnelheid","Uurvak FHX","Laagste uurgemiddelde windsnelheid","Uurvak FHN","Hoogste windstoot","Uurvak FXX","Etmaalgemiddelde temperatuur","Minimum temperatuur",'Uurvak TN',"Maximum temperatuur","Uurvak TX","Minimum temperatuur op 10 cm","6-Uurs minimum temperatuur","Zonneschijnduur","Percentage maximale zonneschijnduur","Globale straling","Duur van de neerslag","Etmaalsom neerslag","Hoogste uursom neerslag","Uurvak RHX","Etmaalgemiddelde luchtdruk","Hoogste uurwaarde luchtdruk","Uurvak PX","Laagste uurwaarde luchtdruk","Uurvak PN","Minimum zicht","Uurvak VVN","Maximum zicht","Uurvak VVX","Etmaalgemiddelde bewolking","Etmaalgemiddelde vochtigheid","Maximale vochtigheid","Uurvak UX","Minimale vochtigheid","Uurvak UN","Referentiegewasverdamping"]
+    current = start
+    while current <= end:
+        current_str = int(current.timestamp())
+        if current.month == 1 and (current.year % 5 == 0 or current.year == datetime.now().year):
+            ret[current_str] = {
+                "label": str(current.year),
+                "style": {"font-weight": "bold"},
+            }
 
-KNMI_df = KNMI_df.dropna(subset=['Etmaalsom neerslag'])
+        else:
+            pass
+        current += step
+    return ret
+        
+class interactiveGraph():
+    def __init__(self,title,graph):
+        self.title = title
+        self.graph = graph
+        self.TimeframeSlider = []
+    def addTimeframeSlider(min_date,max_date):
+        marks = make_marks_time_slider(min_date, max_date)
+        min_epoch = list(marks.keys())[0]
+        max_epoch = list(marks.keys())[-1]
+        self.TimeframeSlider.append(html.Div(dcc.RangeSlider(marks=marks,min=min_epoch,max=max_epoch,step=(max_epoch - min_epoch) / (len(list(marks.keys())) * 3),value=[min_epoch, max_epoch])))
 
-# De datum van YYYY-MM-DD format naar een pandas datetime format
-KNMI_df['Datum'] = pd.to_datetime(KNMI_df['Datum'], format='%Y%m%d')
+class graph():
+    def __init__(self,title,graph):
+        self.title = title
+        self.graph = graph
+        
+def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
+    graphList = []
+    customGraphList = []
+    for graph in Graphs:
+        if isinstance(graph,interactiveGraph):
+            LEFT_COLUMN = html.Div(
+                dbc.Container(
+                    [
+                        html.H4(children="Configuratie", className="display-5"),
+                        html.Hr(className="my-2"),
+                        html.Label("Selecteer percentage van de dataset", className="lead"),
+                        html.P(
+                            "(Lager is sneller, hoger is preciezer)",
+                            style={"fontSize": 10, "font-weight": "lighter"},
+                        ),
+                        dcc.Slider(
+                            id="n-selection-slider",
+                            min=1,
+                            max=100,
+                            step=1,
+                            marks={
+                                0: "0%",
+                                10: "",
+                                20: "20%",
+                                30: "",
+                                40: "40%",
+                                50: "",
+                                60: "60%",
+                                70: "",
+                                80: "80%",
+                                90: "",
+                                100: "100%",
+                            },
+                            value=20,
+                        ),
+                        html.Label("Selecteer een maand", style={"marginTop": 50}, className="lead"),
+                        html.P(
+                            "(Je kan de dropdown gebruiken of klikken op het staafdiagram hiernaast.)",
+                            style={"fontSize": 10, "font-weight": "lighter"},
+                        ),
+                        dcc.Dropdown(
+                            id="bank-drop", clearable=False, style={"marginBottom": 50, "font-size": 12}
+                        ),
+                        html.Label("Selecteer tijd frame", className="lead"),
+                        html.Div(dcc.RangeSlider(id="time-window-slider")),
+                        html.P(
+                            "(Je kan het tijdframe per maand bepalen)",
+                            style={"fontSize": 10, "font-weight": "lighter","marginBottom": 40},
+                        ),
+                    ],
+                    fluid=True,
+                    className="py-3",
+                ),
+                className="p-2 mb-2 bg-light rounded-3",
+            )
 
-# Selecteer alleen data groter dan het jaar 2000
-KNMI_2000_df = KNMI_df[KNMI_df['Datum'] >= '2000-01-01']
-
-# Vervang metingen met -1 (minder dan 0,05 mm) met 0
-KNMI_2000_Regen_df = KNMI_2000_df[["Datum","Etmaalsom neerslag","Hoogste uursom neerslag"]].replace("   -1",0)
-
-KNMI_2000_Regen_df.index = pd.to_datetime(KNMI_2000_Regen_df['Datum'], format='%Y%m%d')
-
-#Grouped_KNMI = KNMI_2000_Regen_df.groupby(KNMI_2000_Regen_df.index.month)
-
-#Grouped_KNMI["Hoogste uursom neerslag"].mean().count()
-def createDashboard():
+            CORROSPONDING_GRAPH = [
+                dbc.CardHeader(html.H5("Regenval per maand")),
+                dbc.CardBody(
+                    [
+                        dcc.Loading(
+                            id="loading-banks-hist",
+                            children=[
+                                dbc.Alert(
+                                    "Not enough data to render this plot, please adjust the filters",
+                                    id="no-data-alert-bank",
+                                    color="warning",
+                                    style={"display": "none"},
+                                ),
+                                dcc.Graph(id="bank-sample",figure=emptyGraph),
+                            ],
+                            type="default",
+                        )
+                    ],
+                    style={"marginTop": 0, "marginBottom": 0},
+                ),
+            ]
+            
+            customGraphObject = dbc.Row(
+                [
+                    dbc.Col(LEFT_COLUMN, md=4, align="center"),
+                    dbc.Col(dbc.Card(CORROSPONDING_GRAPH), md=8),
+                ],
+                style={"marginTop": 30},
+            )
+            customGraphList.append(customGraphObject)
+        else:
+            GRAPH_PLOT = [
+                dbc.CardHeader(html.H5(graph.title)),
+                dbc.Alert(
+                    "Niet genoeg data om plot te renderen",
+                    id="no-data-alert",
+                    color="warning",
+                    style={"display": "none"},
+                ),
+                dbc.CardBody(
+                    [
+                        dbc.Row(
+                            [
+                                dcc.Loading(
+                                  id="loading-treemap",
+                                  children=[
+                                      dcc.Graph(figure=graph.graph)
+                                      ],
+                                  type="default",
+                                ),
+                            ]
+                        )
+                    ]
+                ),
+            ]
+            graphList.append(GRAPH_PLOT)
+            
     NAVBAR = dbc.Navbar(
         children=[
             html.A(
                 dbc.Row(
                     [
-                        dbc.Col(html.Img(src="https://github.com/Cumlaude-ai/Python_Cursus/blob/main/data/WetterskipLogoTransparent.png?raw=true", height="50px")),
+                        dbc.Col(html.Img(src=LogoUrl, height="50px")),
                         dbc.Col(
-                            dbc.NavbarBrand("Wetterskip dashboard", className="ml-2")
+                            dbc.NavbarBrand(Title, className="ml-2")
                         ),
                     ],
                     align="center",
                 ),
-                href="https://www.wetterskipfryslan.nl",
+                href=SiteUrl,
                 style={"text-decoration": "none"},
             )
         ],
         color="dark",
         dark=True,
         sticky="top",
-        style={"background-size":"cover","color":"white","background-image":"url('https://www.wetterskipfryslan.nl/afbeeldingen/headerfotos/headerfoto-zomer-zeedijk-schiermonnikoog-2.png')"},
+        style={"background-size":"cover","color":"white","background-image":"url('"+BackgroundUrl+"')"},
     )
-    # Customization menu
-    LEFT_COLUMN = html.Div(
-        dbc.Container(
-            [
-                html.H4(children="Configuratie", className="display-5"),
-                html.Hr(className="my-2"),
-                html.Label("Selecteer percentage van de dataset", className="lead"),
-                html.P(
-                    "(Lager is sneller, hoger is preciezer)",
-                    style={"fontSize": 10, "font-weight": "lighter"},
-                ),
-                dcc.Slider(
-                    id="n-selection-slider",
-                    min=1,
-                    max=100,
-                    step=1,
-                    marks={
-                        0: "0%",
-                        10: "",
-                        20: "20%",
-                        30: "",
-                        40: "40%",
-                        50: "",
-                        60: "60%",
-                        70: "",
-                        80: "80%",
-                        90: "",
-                        100: "100%",
-                    },
-                    value=20,
-                ),
-                html.Label("Selecteer een maand", style={"marginTop": 50}, className="lead"),
-                html.P(
-                    "(Je kan de dropdown gebruiken of klikken op het staafdiagram hiernaast.)",
-                    style={"fontSize": 10, "font-weight": "lighter"},
-                ),
-                dcc.Dropdown(
-                    id="bank-drop", clearable=False, style={"marginBottom": 50, "font-size": 12}
-                ),
-                html.Label("Selecteer tijd frame", className="lead"),
-                html.Div(dcc.RangeSlider(id="time-window-slider")),
-                html.P(
-                    "(Je kan het tijdframe per maand bepalen)",
-                    style={"fontSize": 10, "font-weight": "lighter","marginBottom": 40},
-                ),
-            ],
-            fluid=True,
-            className="py-3",
-        ),
-        className="p-2 mb-2 bg-light rounded-3",
-    )
-    
-    WORDCLOUD_PLOTS = [
-        dbc.CardHeader(html.H5("Waterstanden")),
-        dbc.Alert(
-            "Niet genoeg data om plot te renderen",
-            id="no-data-alert",
-            color="warning",
-            style={"display": "none"},
-        ),
-        dbc.CardBody(
-            [
-                dbc.Row(
-                    [
-                        dcc.Loading(
-                          id="loading-treemap",
-                          children=[
-                              dcc.Graph(id="bank-treemap",figure=waterstand_fig)
-                              ],
-                          type="default",
-                        ),
-                    ]
-                )
-            ]
-        ),
-    ]
-    
-    TOP_BANKS_PLOT = [
-        dbc.CardHeader(html.H5("Regenval per maand")),
-        dbc.CardBody(
-            [
-                dcc.Loading(
-                    id="loading-banks-hist",
-                    children=[
-                        dbc.Alert(
-                            "Not enough data to render this plot, please adjust the filters",
-                            id="no-data-alert-bank",
-                            color="warning",
-                            style={"display": "none"},
-                        ),
-                        dcc.Graph(id="bank-sample",figure=emptyGraph),
-                    ],
-                    type="default",
-                )
-            ],
-            style={"marginTop": 0, "marginBottom": 0},
-        ),
-    ]
     
     BODY = dbc.Container(
-        [
-            dbc.Row(
-                [
-                    dbc.Col(LEFT_COLUMN, md=4, align="center"),
-                    dbc.Col(dbc.Card(TOP_BANKS_PLOT), md=8),
-                ],
-                style={"marginTop": 30},
-            ),
-            dbc.Card(WORDCLOUD_PLOTS),
-        ],
+        graphList + customGraphList,
         className="mt-12",
     )
     
-    
-    
     app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
     app.layout = html.Div(children=[NAVBAR, BODY])
-    
-    def make_marks_time_slider(mini, maxi):
-        step = relativedelta.relativedelta(months=+1)
-        start = datetime(year=mini.year, month=1, day=1)
-        end = datetime(year=maxi.year, month=maxi.month, day=30)
-        ret = {}
-    
-        current = start
-        while current <= end:
-            current_str = int(current.timestamp())
-            if current.month == 1 and (current.year % 5 == 0 or current.year == datetime.now().year):
-                ret[current_str] = {
-                    "label": str(current.year),
-                    "style": {"font-weight": "bold"},
-                }
-    
-            else:
-                pass
-            current += step
-        return ret
     
     def dataFrameSize(dataframe, float_percent):
         print("making a local_df data sample with float_percent: %s" % (float_percent))
@@ -339,4 +337,4 @@ def createDashboard():
             return value
         return ""
         
-    return app.run(jupyter_mode="external")
+    return app.run(jupyter_mode="external"), output.serve_kernel_port_as_iframe(8050)
