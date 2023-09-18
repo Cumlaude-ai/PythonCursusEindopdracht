@@ -18,38 +18,6 @@ import random
 from google.colab import output
 from dateutil import relativedelta
 
-
-# Create a list of years from 2000 to 2023
-years = list(range(2000, 2024))
-
-# Create a dictionary with the data
-data = {'Jaren': years, 'Rain': [0] * len(years)}
-
-# Create a pandas DataFrame from the dictionary
-emptyDataframe = pd.DataFrame(data)
-
-emptyGraph = px.bar(data_frame=emptyDataframe,x='Jaren', y='Rain', title='Regenval per maand')
-
-maanden = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec']
-jaren = list(range(2022, 2024))
-waterstand_data = []
-
-for jaar in jaren:
-    for maand in maanden:
-        waterstand_data.append({
-            'Jaar': jaar,
-            'Maand': maand,
-            'Waterstand (cm)': random.uniform(0, 200)
-        })
-
-# Creëer een DataFrame van de gegenereerde gegevens
-df = pd.DataFrame(waterstand_data)
-
-# Creëer een lijngrafiek met Plotly Express
-waterstand_fig = px.line(df, x='Maand', y='Waterstand (cm)', color='Jaar',
-              title='Maandelijkse Waterstanden Over de Jaren',
-              labels={'Waterstand (cm)': 'Waterstand (cm)', 'Jaar': 'Jaar'})
-
 def make_marks_time_slider(mini, maxi):
     step = relativedelta.relativedelta(months=+1)
     start = datetime(year=mini.year, month=1, day=1)
@@ -337,4 +305,4 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             return value
         return ""
         
-    return app.run(jupyter_mode="external"), output.serve_kernel_port_as_iframe(8050)
+    return graphList, BODY, app.run(jupyter_mode="external"), output.serve_kernel_port_as_iframe(8050)
