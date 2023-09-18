@@ -58,6 +58,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     graphList = []
     customGraphList = []
     for graph in Graphs:
+        print(graph)
         if isinstance(graph,interactiveGraph):
             LEFT_COLUMN = html.Div(
                 dbc.Container(
@@ -166,6 +167,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                 ),
             ]
             graphList.append(GRAPH_PLOT)
+            print(graphList)
             
     NAVBAR = dbc.Navbar(
         children=[
