@@ -57,6 +57,7 @@ class graph:
 def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     graphList = []
     customGraphList = []
+    return Graphs
     for graph in Graphs:
         print(graph)
         if isinstance(graph,interactiveGraph):
