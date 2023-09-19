@@ -4,11 +4,11 @@ import json
 from datetime import datetime
 import flask
 import dash
-import dash_table
 import matplotlib.colors as mcolors
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dash_table
+from dash import dcc
+from dash import html
 import plotly.graph_objs as go
 import plotly.express as px
 import pandas as pd
@@ -308,4 +308,4 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             return value
         return ""
         
-    return BODY, app.run(jupyter_mode="external"), output.serve_kernel_port_as_iframe(8050)
+    return app.run(jupyter_mode="external"), output.serve_kernel_port_as_iframe(8050)
