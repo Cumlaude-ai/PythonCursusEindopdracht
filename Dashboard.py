@@ -308,4 +308,4 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             return value
         return ""
         
-    return graphList, BODY, app.run(jupyter_mode="external"), output.serve_kernel_port_as_iframe(8050)
+    return BODY, app.run(jupyter_mode="external"), output.serve_kernel_port_as_iframe(8050)
