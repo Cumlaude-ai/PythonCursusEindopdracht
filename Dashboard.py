@@ -139,6 +139,7 @@ class graph:
         self.graph = graph
         
 def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
+    app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
     graphList = []
     customGraphList = []
     for graph in Graphs:
@@ -267,7 +268,6 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
         className="mt-12",
     )
     
-    app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
     app.layout = html.Div(children=[NAVBAR, BODY])
         
     return app.run(jupyter_mode="external",debug=True), output.serve_kernel_port_as_iframe(8050)
