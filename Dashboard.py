@@ -42,12 +42,61 @@ class interactiveGraph:
     def __init__(self,title,graph):
         self.title = title
         self.graph = graph
-        self.TimeframeSlider = []
-    def addTimeframeSlider(min_date,max_date):
+        self.configuration = []
+    def addTimeframeSlider(title, subtitle,min_date,max_date):
         marks = make_marks_time_slider(min_date, max_date)
         min_epoch = list(marks.keys())[0]
         max_epoch = list(marks.keys())[-1]
-        self.TimeframeSlider.append(html.Div(dcc.RangeSlider(marks=marks,min=min_epoch,max=max_epoch,step=(max_epoch - min_epoch) / (len(list(marks.keys())) * 3),value=[min_epoch, max_epoch])))
+        slider = [
+            html.Label(title, className="lead"),
+            html.Div(dcc.RangeSlider(id="time-window-slider",marks=marks,min=min_epoch,max=max_epoch,step=(max_epoch - min_epoch) / (len(list(marks.keys())) * 3),value=[min_epoch, max_epoch])),
+            html.P(
+                subtitle,
+                style={"fontSize": 10, "font-weight": "lighter","marginBottom": 40},
+            ),
+        ]
+        self.configuration += slider
+    def addPercentageSlider(title,subtitle, value):
+        slider =  [
+            html.Label(title, className="lead"),
+            html.P(
+                subtitle,
+                style={"fontSize": 10, "font-weight": "lighter"},
+            ),
+            dcc.Slider(
+                id="n-selection-slider",
+                min=1,
+                max=100,
+                step=1,
+                marks={
+                    0: "0%",
+                    10: "",
+                    20: "20%",
+                    30: "",
+                    40: "40%",
+                    50: "",
+                    60: "60%",
+                    70: "",
+                    80: "80%",
+                    90: "",
+                    100: "100%",
+                },
+                value=value,
+            )
+        ]
+        self.configuration += slider
+    def addDropdown(title,subtitle):
+        dropdown = [
+            html.Label(title, style={"marginTop": 50}, className="lead"),
+            html.P(
+                subtitle,
+                style={"fontSize": 10, "font-weight": "lighter"},
+            ),
+            dcc.Dropdown(
+                id="bank-drop", clearable=False, style={"marginBottom": 50, "font-size": 12}
+            ),
+        ]
+        self.configuration += dropdown
 
 class graph:
     def __init__(self,title,graph):
@@ -58,53 +107,13 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     graphList = []
     customGraphList = []
     for graph in Graphs:
-        print(graph)
         if isinstance(graph,interactiveGraph):
             LEFT_COLUMN = html.Div(
                 dbc.Container(
                     [
                         html.H4(children="Configuratie", className="display-5"),
                         html.Hr(className="my-2"),
-                        html.Label("Selecteer percentage van de dataset", className="lead"),
-                        html.P(
-                            "(Lager is sneller, hoger is preciezer)",
-                            style={"fontSize": 10, "font-weight": "lighter"},
-                        ),
-                        dcc.Slider(
-                            id="n-selection-slider",
-                            min=1,
-                            max=100,
-                            step=1,
-                            marks={
-                                0: "0%",
-                                10: "",
-                                20: "20%",
-                                30: "",
-                                40: "40%",
-                                50: "",
-                                60: "60%",
-                                70: "",
-                                80: "80%",
-                                90: "",
-                                100: "100%",
-                            },
-                            value=20,
-                        ),
-                        html.Label("Selecteer een maand", style={"marginTop": 50}, className="lead"),
-                        html.P(
-                            "(Je kan de dropdown gebruiken of klikken op het staafdiagram hiernaast.)",
-                            style={"fontSize": 10, "font-weight": "lighter"},
-                        ),
-                        dcc.Dropdown(
-                            id="bank-drop", clearable=False, style={"marginBottom": 50, "font-size": 12}
-                        ),
-                        html.Label("Selecteer tijd frame", className="lead"),
-                        html.Div(dcc.RangeSlider(id="time-window-slider")),
-                        html.P(
-                            "(Je kan het tijdframe per maand bepalen)",
-                            style={"fontSize": 10, "font-weight": "lighter","marginBottom": 40},
-                        ),
-                    ],
+                    ] + graph.configuration,
                     fluid=True,
                     className="py-3",
                 ),
@@ -112,7 +121,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             )
 
             CORROSPONDING_GRAPH = [
-                dbc.CardHeader(html.H5("Regenval per maand")),
+                dbc.CardHeader(html.H5(graph.title)),
                 dbc.CardBody(
                     [
                         dcc.Loading(
@@ -124,7 +133,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                                     color="warning",
                                     style={"display": "none"},
                                 ),
-                                dcc.Graph(id="bank-sample",figure=emptyGraph),
+                                dcc.Graph(id=graph.title,figure=emptyGraph),
                             ],
                             type="default",
                         )
@@ -158,7 +167,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                                     dcc.Loading(
                                       id="loading-treemap",
                                       children=[
-                                          dcc.Graph(id="bank-wordcloud",figure=graph.graph)
+                                          dcc.Graph(figure=graph.graph)
                                           ],
                                       type="default",
                                     ),
@@ -166,7 +175,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                             )
                         ]
                     ),
-                ]),
+                ],style={"marginTop": 30},),
             ]
             graphList += GRAPH_PLOT
             
