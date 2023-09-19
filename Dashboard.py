@@ -57,7 +57,6 @@ class graph:
 def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     graphList = []
     customGraphList = []
-    return Graphs
     for graph in Graphs:
         print(graph)
         if isinstance(graph,interactiveGraph):
@@ -308,4 +307,4 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             return value
         return ""
         
-    return app.run(jupyter_mode="external"), output.serve_kernel_port_as_iframe(8050)
+    return app.run(jupyter_mode="external"), output.serve_kernel_port_as_iframe(8050), graphList, BODY
