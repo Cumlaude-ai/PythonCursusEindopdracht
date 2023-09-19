@@ -143,7 +143,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     customGraphList = []
     for graph in Graphs:
         if isinstance(graph,interactiveGraph):
-            interactivegrpahID = uuid.uuid1()
+            interactivegrpahID = str(uuid.uuid1())
             LEFT_COLUMN = html.Div(
                 dbc.Container(
                     [
