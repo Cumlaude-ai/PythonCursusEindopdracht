@@ -140,9 +140,9 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                 ],
                 style={"marginTop": 30},
             )
-            customGraphList.append(customGraphObject)
+            customGraphList = customGraphList + customGraphObject
         else:
-            GRAPH_PLOT = [
+            GRAPH_PLOT = (
                 dbc.CardHeader(html.H5(graph.title)),
                 dbc.Alert(
                     "Niet genoeg data om plot te renderen",
@@ -165,9 +165,8 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                         )
                     ]
                 ),
-            ]
-            graphList.append(GRAPH_PLOT)
-            print(graphList)
+            )
+            graphList = graphList + GRAPH_PLOT
             
     NAVBAR = dbc.Navbar(
         children=[
@@ -198,113 +197,5 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     
     app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
     app.layout = html.Div(children=[NAVBAR, BODY])
-    
-    def dataFrameSize(dataframe, float_percent):
-        print("making a local_df data sample with float_percent: %s" % (float_percent))
-        return dataframe.sample(frac=float_percent, random_state=1,replace=True)
-    
-    def time_slider_to_date(time_values):
-        min_date = datetime.fromtimestamp(time_values[0]).strftime("%c")
-        max_date = datetime.fromtimestamp(time_values[1]).strftime("%c")
-        return [min_date, max_date]
-    
-    def calculate_bank_sample_data(dataframe, time_values):
-        if time_values is not None:
-            min_date = time_values[0]
-            max_date = time_values[1]
-            dataframe = dataframe[
-                (dataframe["Datum"] >= min_date)
-                & (dataframe["Datum"] <= max_date)
-            ]
-    
-        yearData = dataframe.groupby(dataframe.index.year)
-        years = yearData["Datum"].groups.keys()
-        avgRain = yearData["Etmaalsom neerslag"].mean().round(0).astype(np.int64).tolist()
-    
-        return years, avgRain
-    
-    @app.callback(
-        [
-            Output("time-window-slider", "marks"),
-            Output("time-window-slider", "min"),
-            Output("time-window-slider", "max"),
-            Output("time-window-slider", "step"),
-            Output("time-window-slider", "value"),
-        ],
-        [Input("n-selection-slider", "value")],
-    )
-    def populate_time_slider(value):
-        value += 0
-        min_date = KNMI_2000_Regen_df["Datum"].min()
-        max_date = KNMI_2000_Regen_df["Datum"].max()
-    
-        app.logger.info(min_date)
-        app.logger.info(max_date)
-        marks = make_marks_time_slider(min_date, max_date)
-        app.logger.info(marks)
-        min_epoch = list(marks.keys())[0]
-        max_epoch = list(marks.keys())[-1]
-    
-        return (
-            marks,
-            min_epoch,
-            max_epoch,
-            (max_epoch - min_epoch) / (len(list(marks.keys())) * 3),
-            [min_epoch, max_epoch],
-        )
-    
-    @app.callback(
-        Output("bank-drop", "options"),
-        [Input("time-window-slider", "value"), Input("n-selection-slider", "value")],
-    )
-    def populate_bank_dropdown(time_values, n_value):
-        """ TODO """
-        print("bank-drop: TODO USE THE TIME VALUES AND N-SLIDER TO LIMIT THE DATASET")
-        if time_values is not None:
-            pass
-        n_value += 1
-        #months, rain = get_rain_by_month(Grouped_KNMI)
-        #rain.append(1)
-        ret = []
-        counter = 0
-        for month in ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"]:
-            counter += 1
-            ret.append({"label": month, "value": counter})
-        return ret
-    
-    # Output("no-data-alert-bank", "style")
-    @app.callback(
-        [Output("bank-sample", "figure")],
-        [Input("n-selection-slider", "value"), Input("bank-drop","value"), Input("time-window-slider", "value")],
-    )
-    def update_bank_sample_plot(n_value, dropdownValue, time_values):
-        if time_values is None:
-            return [{}]
-        dataFrameSizePercentage = float(n_value / 100)
-        local_df = dataFrameSize(KNMI_2000_Regen_df[KNMI_2000_Regen_df['Datum'].dt.month==dropdownValue], dataFrameSizePercentage)
-        min_date, max_date = time_slider_to_date(time_values)
-        values_sample, counts_sample = calculate_bank_sample_data(
-            local_df, [min_date, max_date]
-        )
-    
-        # Create a dictionary with the data
-        data = {'Jaren': values_sample, 'Rain': counts_sample}
-    
-        # Create a pandas DataFrame from the dictionary
-        df = pd.DataFrame(data)
-    
-        graph = px.bar(data_frame=df, x='Jaren', y='Rain', title='Regenval per maand' )
-        layout = {
-            "autosize": False,
-            "margin": dict(t=10, b=10, l=40, r=0, pad=4),
-            "xaxis": {"showticklabels": False},
-        }
-        return [ graph ]
-    
-    @app.callback(Output("bank-drop", "value"), [Input("bank-sample", "clickData")])
-    def update_bank_drop_on_click(value):
-        if value is not None:
-            return value
-        return ""
         
     return app.run(jupyter_mode="external",debug=True), output.serve_kernel_port_as_iframe(8050), graphList, BODY
