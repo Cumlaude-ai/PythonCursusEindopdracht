@@ -133,7 +133,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                                     color="warning",
                                     style={"display": "none"},
                                 ),
-                                dcc.Graph(id=graph.title,figure=emptyGraph),
+                                dcc.Graph(id=graph.title,figure=graph.graph),
                             ],
                             type="default",
                         )
