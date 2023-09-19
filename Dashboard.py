@@ -143,30 +143,32 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             customGraphList = customGraphList + customGraphObject
         else:
             GRAPH_PLOT = [
-                dbc.CardHeader(html.H5(graph.title)),
-                dbc.Alert(
-                    "Niet genoeg data om plot te renderen",
-                    id="no-data-alert",
-                    color="warning",
-                    style={"display": "none"},
-                ),
-                dbc.CardBody(
-                    [
-                        dbc.Row(
-                            [
-                                dcc.Loading(
-                                  id="loading-treemap",
-                                  children=[
-                                      dcc.Graph(figure=graph.graph)
-                                      ],
-                                  type="default",
-                                ),
-                            ]
-                        )
-                    ]
+                dbc.Card(
+                    dbc.CardHeader(html.H5(graph.title)),
+                    dbc.Alert(
+                        "Niet genoeg data om plot te renderen",
+                        id="no-data-alert",
+                        color="warning",
+                        style={"display": "none"},
+                    ),
+                    dbc.CardBody(
+                        [
+                            dbc.Row(
+                                [
+                                    dcc.Loading(
+                                      id="loading-treemap",
+                                      children=[
+                                          dcc.Graph(id="bank-wordcloud",figure=graph.graph)
+                                          ],
+                                      type="default",
+                                    ),
+                                ]
+                            )
+                        ]
+                    ),
                 ),
             ]
-            graphList = graphList + GRAPH_PLOT
+            graphList += GRAPH_PLOT
             
     NAVBAR = dbc.Navbar(
         children=[
