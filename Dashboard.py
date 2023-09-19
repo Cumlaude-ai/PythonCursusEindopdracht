@@ -149,7 +149,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                 ],
                 style={"marginTop": 30},
             )
-            customGraphList = customGraphList + customGraphObject
+            customGraphList += [customGraphObject]
         else:
             GRAPH_PLOT = [
                 dbc.Card([
