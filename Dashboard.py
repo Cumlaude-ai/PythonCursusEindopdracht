@@ -43,7 +43,7 @@ class interactiveGraph:
         self.title = title
         self.graph = graph
         self.configuration = []
-    def addTimeframeSlider(title, subtitle,min_date,max_date):
+    def addTimeframeSlider(self,title, subtitle,min_date,max_date):
         marks = make_marks_time_slider(min_date, max_date)
         min_epoch = list(marks.keys())[0]
         max_epoch = list(marks.keys())[-1]
@@ -56,7 +56,7 @@ class interactiveGraph:
             ),
         ]
         self.configuration += slider
-    def addPercentageSlider(title,subtitle, value):
+    def addPercentageSlider(self,title,subtitle, value):
         slider =  [
             html.Label(title, className="lead"),
             html.P(
@@ -85,7 +85,7 @@ class interactiveGraph:
             )
         ]
         self.configuration += slider
-    def addDropdown(title,subtitle):
+    def addDropdown(self,title,subtitle):
         dropdown = [
             html.Label(title, style={"marginTop": 50}, className="lead"),
             html.P(
