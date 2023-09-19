@@ -142,7 +142,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             )
             customGraphList = customGraphList + customGraphObject
         else:
-            GRAPH_PLOT = (
+            GRAPH_PLOT = [
                 dbc.CardHeader(html.H5(graph.title)),
                 dbc.Alert(
                     "Niet genoeg data om plot te renderen",
@@ -165,7 +165,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                         )
                     ]
                 ),
-            )
+            ]
             graphList = graphList + GRAPH_PLOT
             
     NAVBAR = dbc.Navbar(
