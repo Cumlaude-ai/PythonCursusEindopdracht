@@ -17,6 +17,7 @@ from dash.dependencies import Output, Input, State
 import random
 from google.colab import output
 from dateutil import relativedelta
+import uuid
 
 def make_marks_time_slider(mini, maxi):
     step = relativedelta.relativedelta(months=+1)
@@ -37,16 +38,41 @@ def make_marks_time_slider(mini, maxi):
             pass
         current += step
     return ret
+def dataFrameSize(dataframe, float_percent):
+        print("making a local_df data sample with float_percent: %s" % (float_percent))
+        return dataframe.sample(frac=float_percent, random_state=1,replace=True)
+    
+def time_slider_to_date(time_values):
+    min_date = datetime.fromtimestamp(time_values[0]).strftime("%c")
+    max_date = datetime.fromtimestamp(time_values[1]).strftime("%c")
+    return [min_date, max_date]
+
+def calculate_bank_sample_data(dataframe, time_values):
+    if time_values is not None:
+        min_date = time_values[0]
+        max_date = time_values[1]
+        dataframe = dataframe[
+            (dataframe["Datum"] >= min_date)
+            & (dataframe["Datum"] <= max_date)
+        ]
+
+    yearData = dataframe.groupby(dataframe.index.year)
+    years = yearData["Datum"].groups.keys()
+    avgRain = yearData["Etmaalsom neerslag"].mean().round(0).astype(np.int64).tolist()
+
+    return years, avgRain
         
 class interactiveGraph:
     def __init__(self,title,graph):
         self.title = title
         self.graph = graph
+        self.idlist = []
         self.configuration = []
     def addTimeframeSlider(self,title, subtitle,min_date,max_date):
         marks = make_marks_time_slider(min_date, max_date)
         min_epoch = list(marks.keys())[0]
         max_epoch = list(marks.keys())[-1]
+        sliderID = uuid.uuid1()
         slider = [
             html.Label(title, className="lead"),
             html.Div(dcc.RangeSlider(id="time-window-slider",marks=marks,min=min_epoch,max=max_epoch,step=(max_epoch - min_epoch) / (len(list(marks.keys())) * 3),value=[min_epoch, max_epoch])),
@@ -56,7 +82,9 @@ class interactiveGraph:
             ),
         ]
         self.configuration += slider
+        self.idlist.append({id:"time-window-slider",type:"timeslider"})
     def addPercentageSlider(self,title,subtitle, value):
+        sliderID = uuid.uuid1()
         slider =  [
             html.Label(title, className="lead"),
             html.P(
@@ -85,7 +113,14 @@ class interactiveGraph:
             )
         ]
         self.configuration += slider
+        self.idlist.append({id:"n-selection-slider",type:"percentageslider"})
     def addDropdown(self,title,subtitle):
+        dropdownID = uuid.uuid1()
+        ret=[]
+        counter =0
+        for month in ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"]:
+            counter += 1
+            ret.append({"label": month, "value": counter})
         dropdown = [
             html.Label(title, style={"marginTop": 50}, className="lead"),
             html.P(
@@ -93,11 +128,11 @@ class interactiveGraph:
                 style={"fontSize": 10, "font-weight": "lighter"},
             ),
             dcc.Dropdown(
-                id="bank-drop", clearable=False, style={"marginBottom": 50, "font-size": 12}
+                id=dropdownID, clearable=False, style={"marginBottom": 50, "font-size": 12}, options=ret
             ),
         ]
         self.configuration += dropdown
-
+        self.idlist.append({id:dropdownID,type:"dropdown"})
 class graph:
     def __init__(self,title,graph):
         self.title = title
@@ -108,6 +143,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     customGraphList = []
     for graph in Graphs:
         if isinstance(graph,interactiveGraph):
+            interactivegrpahID = uuid.uuid1()
             LEFT_COLUMN = html.Div(
                 dbc.Container(
                     [
@@ -133,7 +169,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                                     color="warning",
                                     style={"display": "none"},
                                 ),
-                                dcc.Graph(id=graph.title,figure=graph.graph),
+                                dcc.Graph(id=interactivegrpahID,figure=graph.graph),
                             ],
                             type="default",
                         )
@@ -150,6 +186,31 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                 style={"marginTop": 30},
             )
             customGraphList += [customGraphObject]
+            for configobject in graph.idlist:
+                if configobject.type == "timeslider":
+                        pass
+                else if configobject.type == "percentageslider":
+                    pass
+                else if configobject.type == "dropdown":
+                    @app.callback(
+                        [Output(interactivegrpahID, "figure")],
+                        [Input("n-selection-slider", "value"), Input(configobject.id,"value"), Input("time-window-slider", "value")],
+                    )
+                    def update_bank_sample_plot(n_value, dropdownValue, time_values):
+                        if time_values is None:
+                            return [{}]
+                        dataFrameSizePercentage = float(n_value / 100)
+                        local_df = dataFrameSize(Data[Data['Datum'].dt.month==dropdownValue], dataFrameSizePercentage)
+                        min_date, max_date = time_slider_to_date(time_values)
+                        values_sample, counts_sample = calculate_bank_sample_data(
+                            local_df, [min_date, max_date]
+                        )
+                        
+                        for i, col in enumerate(graph.graph.data):
+                        graph.graph.data[i]['y'] = values_sample
+                        graph.graph.data[i]['x'] = counts_sample
+                        
+                        return [ graph.graph ]
         else:
             GRAPH_PLOT = [
                 dbc.Card([
