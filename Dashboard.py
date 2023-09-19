@@ -82,7 +82,7 @@ class interactiveGraph:
             ),
         ]
         self.configuration += slider
-        self.idlist.append({id:"time-window-slider",type:"timeslider"})
+        self.idlist.append({"id":"time-window-slider","type":"timeslider"})
     def addPercentageSlider(self,title,subtitle, value):
         sliderID = str(uuid.uuid1())
         slider =  [
@@ -113,7 +113,7 @@ class interactiveGraph:
             )
         ]
         self.configuration += slider
-        self.idlist.append({id:"n-selection-slider",type:"percentageslider"})
+        self.idlist.append({"id":"n-selection-slider","type":"percentageslider"})
     def addDropdown(self,title,subtitle):
         dropdownID = str(uuid.uuid1())
         ret=[]
@@ -132,7 +132,7 @@ class interactiveGraph:
             ),
         ]
         self.configuration += dropdown
-        self.idlist.append({id:dropdownID,type:"dropdown"})
+        self.idlist.append({"id":dropdownID,"type":"dropdown"})
 class graph:
     def __init__(self,title,graph):
         self.title = title
@@ -187,7 +187,6 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             )
             customGraphList += [customGraphObject]
             for configobject in graph.idlist:
-                return configobject
                 if configobject.type == "timeslider":
                         pass
                 elif configobject.type == "percentageslider":
