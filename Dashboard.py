@@ -143,7 +143,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     customGraphList = []
     for graph in Graphs:
         if isinstance(graph,interactiveGraph):
-            interactivegrpahID = str(uuid.uuid1())
+            interactivegraphID = str(uuid.uuid1())
             LEFT_COLUMN = html.Div(
                 dbc.Container(
                     [
@@ -169,7 +169,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                                     color="warning",
                                     style={"display": "none"},
                                 ),
-                                dcc.Graph(id=interactivegrpahID,figure=graph.graph),
+                                dcc.Graph(id=interactivegraphID,figure=graph.graph),
                             ],
                             type="default",
                         )
@@ -187,14 +187,14 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             )
             customGraphList += [customGraphObject]
             for configobject in graph.idlist:
-                if configobject.type == "timeslider":
+                if configobject["type"] == "timeslider":
                         pass
-                elif configobject.type == "percentageslider":
+                elif configobject["type"] == "percentageslider":
                     pass
-                elif configobject.type == "dropdown":
+                elif configobject["type"] == "dropdown":
                     @app.callback(
-                        [Output(interactivegrpahID, "figure")],
-                        [Input("n-selection-slider", "value"), Input(configobject.id,"value"), Input("time-window-slider", "value")],
+                        [Output(interactivegraphID, "figure")],
+                        [Input("n-selection-slider", "value"), Input(configobject["id"],"value"), Input("time-window-slider", "value")],
                     )
                     def update_bank_sample_plot(n_value, dropdownValue, time_values):
                         if time_values is None:
