@@ -207,8 +207,8 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                         )
                         
                         for i, col in enumerate(graph.graph.data):
-                        graph.graph.data[i]['y'] = values_sample
-                        graph.graph.data[i]['x'] = counts_sample
+                            graph.graph.data[i]['y'] = values_sample
+                            graph.graph.data[i]['x'] = counts_sample
                         
                         return [ graph.graph ]
         else:
