@@ -72,7 +72,7 @@ class interactiveGraph:
         marks = make_marks_time_slider(min_date, max_date)
         min_epoch = list(marks.keys())[0]
         max_epoch = list(marks.keys())[-1]
-        sliderID = uuid.uuid1()
+        sliderID = str(uuid.uuid1())
         slider = [
             html.Label(title, className="lead"),
             html.Div(dcc.RangeSlider(id="time-window-slider",marks=marks,min=min_epoch,max=max_epoch,step=(max_epoch - min_epoch) / (len(list(marks.keys())) * 3),value=[min_epoch, max_epoch])),
@@ -84,7 +84,7 @@ class interactiveGraph:
         self.configuration += slider
         self.idlist.append({id:"time-window-slider",type:"timeslider"})
     def addPercentageSlider(self,title,subtitle, value):
-        sliderID = uuid.uuid1()
+        sliderID = str(uuid.uuid1())
         slider =  [
             html.Label(title, className="lead"),
             html.P(
@@ -115,7 +115,7 @@ class interactiveGraph:
         self.configuration += slider
         self.idlist.append({id:"n-selection-slider",type:"percentageslider"})
     def addDropdown(self,title,subtitle):
-        dropdownID = uuid.uuid1()
+        dropdownID = str(uuid.uuid1())
         ret=[]
         counter =0
         for month in ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"]:
