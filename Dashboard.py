@@ -189,9 +189,9 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             for configobject in graph.idlist:
                 if configobject.type == "timeslider":
                         pass
-                else if configobject.type == "percentageslider":
+                elif configobject.type == "percentageslider":
                     pass
-                else if configobject.type == "dropdown":
+                elif configobject.type == "dropdown":
                     @app.callback(
                         [Output(interactivegrpahID, "figure")],
                         [Input("n-selection-slider", "value"), Input(configobject.id,"value"), Input("time-window-slider", "value")],
