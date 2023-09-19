@@ -187,6 +187,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             )
             customGraphList += [customGraphObject]
             for configobject in graph.idlist:
+                return configobject
                 if configobject.type == "timeslider":
                         pass
                 elif configobject.type == "percentageslider":
