@@ -206,11 +206,9 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                         values_sample, counts_sample = calculate_bank_sample_data(
                             local_df, [min_date, max_date]
                         )
-                        months = ["?","Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"]
                         
                         graph.graph.data[0]['x'] = values_sample
                         graph.graph.data[0]['y'] = counts_sample
-                        #graph.graph.layout.data.title.text = "Regenval per maand in " + months[dropdownValue]
                         
                         return [ graph.graph ]
         else:
