@@ -60,7 +60,7 @@ def calculate_bank_sample_data(dataframe, time_values):
     years = yearData["Datum"].groups.keys()
     avgRain = yearData["Etmaalsom neerslag"].mean().round(0).astype(np.int64).tolist()
 
-    return dataframe.index.year, dataframe["Etmaalsom neerslag"]
+    return years, yearData["Etmaalsom neerslag"].mean()
         
 class interactiveGraph:
     def __init__(self,title,graph):
