@@ -207,8 +207,8 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                             local_df, [min_date, max_date]
                         )
                         
-                        graph.graph.data[0]['y'] = values_sample
-                        graph.graph.data[0]['x'] = counts_sample
+                        graph.graph.data[0]['x'] = values_sample
+                        graph.graph.data[0]['y'] = counts_sample
                         
                         return [ graph.graph ]
         else:
