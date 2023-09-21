@@ -210,7 +210,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                         
                         graph.graph.data[0]['x'] = values_sample
                         graph.graph.data[0]['y'] = counts_sample
-                        graph.graph.layout.data.title.text = "Regenval per maand in " + months[dropdownValue]
+                        #graph.graph.layout.data.title.text = "Regenval per maand in " + months[dropdownValue]
                         
                         return [ graph.graph ]
         else:
