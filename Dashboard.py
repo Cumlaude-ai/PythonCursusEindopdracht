@@ -163,11 +163,9 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                 dbc.CardBody(
                     [
                         dcc.Loading(
-                            id="loading-banks-hist",
                             children=[
                                 dbc.Alert(
                                     "Not enough data to render this plot, please adjust the filters",
-                                    id="no-data-alert-bank",
                                     color="warning",
                                     style={"display": "none"},
                                 ),
@@ -218,7 +216,6 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                     dbc.CardHeader(html.H5(graph.title)),
                     dbc.Alert(
                         "Niet genoeg data om plot te renderen",
-                        id="no-data-alert",
                         color="warning",
                         style={"display": "none"},
                     ),
@@ -227,7 +224,6 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                             dbc.Row(
                                 [
                                     dcc.Loading(
-                                      id="loading-treemap",
                                       children=[
                                           dcc.Graph(figure=graph.graph)
                                           ],
@@ -270,4 +266,4 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     
     app.layout = html.Div(children=[NAVBAR, BODY])
         
-    return app.run(jupyter_mode="external",debug=True), output.serve_kernel_port_as_iframe(8050)
+    return app.run(jupyter_mode="external",debug=False), output.serve_kernel_port_as_iframe(8050)
