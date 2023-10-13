@@ -187,11 +187,11 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             )
             customGraphList += [customGraphObject]
             for configobject in graph.idlist:
-                if configobject["type"] == "timeslider":
-                        pass
+                if configobject["type"] == "dropdown":
+                    pass
                 elif configobject["type"] == "percentageslider":
                     pass
-                elif configobject["type"] == "dropdown":
+                elif configobject["type"] == "timeslider":
                     @app.callback(
                         [Output(interactivegraphID, "figure")],
                         [Input("n-selection-slider", "value"), Input(configobject["id"],"value"), Input("time-window-slider", "value")],
