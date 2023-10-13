@@ -197,8 +197,6 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                         [Input("n-selection-slider", "value"), Input(configobject["id"],"value"), Input("time-window-slider", "value")],
                     )
                     def update_bank_sample_plot(n_value, dropdownValue, time_values):
-                        #if time_values is None:
-                        #    return [{}]
                         dataFrameSizePercentage = float(n_value / 100)
                         local_df = dataFrameSize(Data[Data['Datum'].dt.month==dropdownValue], dataFrameSizePercentage)
                         min_date, max_date = time_slider_to_date(time_values)
