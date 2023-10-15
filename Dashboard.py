@@ -193,28 +193,25 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                 elif configobject["type"] == "percentageslider":
                     pass
                 elif configobject["type"] == "timeslider":
-                    @app.callback(
-                        [Output(interactivegraphID, "figure")],
-                        [Input("n-selection-slider", "value"), Input(configobject["id"],"value"), Input("time-window-slider", "value")],
-                    )
-                    def update_bank_sample_plot(n_value, dropdownValue, time_values):
-                        dataFrameSizePercentage = float(n_value / 100)
-                        local_df = dataFrameSize(Data[Data['Datum'].dt.month==dropdownValue], dataFrameSizePercentage)
-                        min_date, max_date = time_slider_to_date(time_values)
-                        values_sample, counts_sample = calculate_bank_sample_data(
-                            local_df, [min_date, max_date]
-                        )
-                        
-                        graph.graph.data[0]['x'] = values_sample
-                        graph.graph.data[0]['y'] = counts_sample
-                        
-                        return [ graph.graph ]
-                else:
-                    @app.callback(
-                        [Output(titleID, "figure")]
-                    )
-                    def update_bank_sample_plot(n_value, dropdownValue, time_values):
+                    pass
                     
+            @app.callback(
+                [Output(interactivegraphID, "figure")],
+                [Input("n-selection-slider", "value"), Input(configobject["id"],"value"), Input("time-window-slider", "value")],
+            )
+            def update_bank_sample_plot(n_value, dropdownValue, time_values):
+                dataFrameSizePercentage = float(n_value / 100)
+                local_df = dataFrameSize(Data[Data['Datum'].dt.month==dropdownValue], dataFrameSizePercentage)
+                min_date, max_date = time_slider_to_date(time_values)
+                values_sample, counts_sample = calculate_bank_sample_data(
+                    local_df, [min_date, max_date]
+                )
+                
+                graph.graph.data[0]['x'] = values_sample
+                graph.graph.data[0]['y'] = counts_sample
+                
+                return [ graph.graph ]
+                
         else:
             GRAPH_PLOT = [
                 dbc.Card([
