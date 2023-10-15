@@ -134,7 +134,7 @@ class interactiveGraph:
             ),
         ]
         self.configuration += dropdown
-        self.idlist.append({"id":dropdownID,"type":"dropdown"})
+        self.idlist.append({"id":"MonthDropdown","type":"dropdown"})
 class graph:
     def __init__(self,title,graph):
         self.title = title
@@ -196,7 +196,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                     pass
             @app.callback(
                 [Output("InteractiveGraph", "figure")],
-                [Input("n-selection-slider", "value"), Input(configobject["id"],"value"), Input("time-window-slider", "value")],
+                [Input("n-selection-slider", "value"), Input("MonthDropdown","value"), Input("time-window-slider", "value")],
             )
             def update_bank_sample_plot(n_value, dropdownValue, time_values):
                 sys.stdout = n_value + " / " + dropdownValue + " / " + time_values
