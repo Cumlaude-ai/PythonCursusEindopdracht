@@ -194,7 +194,23 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                     pass
                 elif configobject["type"] == "timeslider":
                     pass
-            
+            @app.callback(
+                [Output("InteractiveGraph", "figure")],
+                [Input("n-selection-slider", "value"), Input("MonthDropdown","value"), Input("time-window-slider", "value")],
+            )
+            def update_bank_sample_plot(n_value, dropdownValue, time_values):
+                sys.stdout = n_value + " / " + dropdownValue + " / " + time_values
+                dataFrameSizePercentage = float(n_value / 100)
+                local_df = dataFrameSize(Data[Data['Datum'].dt.month==dropdownValue], dataFrameSizePercentage)
+                min_date, max_date = time_slider_to_date(time_values)
+                values_sample, counts_sample = calculate_bank_sample_data(
+                    local_df, [min_date, max_date]
+                )
+                
+                graph.graph.data[0]['x'] = values_sample
+                graph.graph.data[0]['y'] = counts_sample
+                
+                return [ graph.graph ]      
             
                 
         else:
@@ -252,26 +268,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     )
     
     app.layout = html.Div(children=[NAVBAR, BODY])
-    
-    @app.callback(
-        [Output("InteractiveGraph", "figure")],
-        [Input("n-selection-slider", "value"), Input("MonthDropdown","value"), Input("time-window-slider", "value"), Input("InteractiveGraph", "figure")],
-    )
-    def update_bank_sample_plot(n_value, dropdownValue, time_values,graph):
-        sys.stdout = n_value + " / " + dropdownValue + " / " + time_values
-        dataFrameSizePercentage = float(n_value / 100)
-        local_df = dataFrameSize(Data[Data['Datum'].dt.month==dropdownValue], dataFrameSizePercentage)
-        min_date, max_date = time_slider_to_date(time_values)
-        values_sample, counts_sample = calculate_bank_sample_data(
-            local_df, [min_date, max_date]
-        )
-        
-        graph.data[0]['x'] = values_sample
-        graph.data[0]['y'] = counts_sample
-        
-        return [ graph ]      
+
     
         
     return app.run(jupyter_mode="external",debug=True), output.serve_kernel_port_as_iframe(8050)
-
-
