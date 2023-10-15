@@ -130,7 +130,7 @@ class interactiveGraph:
                 style={"fontSize": 10, "font-weight": "lighter"},
             ),
             dcc.Dropdown(
-                id=dropdownID, clearable=False, style={"marginBottom": 50, "font-size": 12}, options=ret
+                id="MonthDropdown", clearable=False, style={"marginBottom": 50, "font-size": 12}, options=ret
             ),
         ]
         self.configuration += dropdown
