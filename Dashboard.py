@@ -146,6 +146,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     for graph in Graphs:
         if isinstance(graph,interactiveGraph):
             interactivegraphID = str(uuid.uuid1())
+            titleID = str(uuid.uuid1())
             LEFT_COLUMN = html.Div(
                 dbc.Container(
                     [
@@ -159,7 +160,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             )
 
             CORROSPONDING_GRAPH = [
-                dbc.CardHeader(html.H5(graph.title)),
+                dbc.CardHeader(html.H5(id=titleID,graph.title)),
                 dbc.CardBody(
                     [
                         dcc.Loading(
@@ -208,6 +209,12 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                         graph.graph.data[0]['y'] = counts_sample
                         
                         return [ graph.graph ]
+                else:
+                    @app.callback(
+                        [Output(titleID, "figure")]
+                    )
+                    def update_bank_sample_plot(n_value, dropdownValue, time_values):
+                    
         else:
             GRAPH_PLOT = [
                 dbc.Card([
