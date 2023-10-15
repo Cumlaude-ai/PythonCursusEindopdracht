@@ -146,7 +146,6 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
     for graph in Graphs:
         if isinstance(graph,interactiveGraph):
             interactivegraphID = str(uuid.uuid1())
-            titleID = str(uuid.uuid1())
             LEFT_COLUMN = html.Div(
                 dbc.Container(
                     [
@@ -160,7 +159,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             )
 
             CORROSPONDING_GRAPH = [
-                dbc.CardHeader(html.H5(id=titleID,graph.title)),
+                dbc.CardHeader(html.H5(graph.title)),
                 dbc.CardBody(
                     [
                         dcc.Loading(
