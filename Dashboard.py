@@ -57,12 +57,12 @@ def calculate_bank_sample_data(dataframe, time_values):
             & (dataframe["Datum"] <= max_date)
         ]
 
-    yearData = dataframe.groupby(dataframe.index.year)
-    years = yearData["Datum"].groups.keys()
-    avgRain = yearData["Etmaalsom neerslag"].mean().round(0).astype(np.int64).tolist()
+    yearData = dataframe.groupby(dataframe.index.year).mean()
+    #years = yearData["Datum"].groups.keys()
+    #avgRain = yearData["Etmaalsom neerslag"].mean().round(0).astype(np.int64).tolist()
     #return years, yearData["Etmaalsom neerslag"].mean()
     
-    return years, dataframe["Etmaalsom neerslag"]
+    return yearData.index, yearData["Etmaalsom neerslag"]
         
 class interactiveGraph:
     def __init__(self,title,graph):
