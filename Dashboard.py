@@ -195,7 +195,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                 elif configobject["type"] == "timeslider":
                     pass
             @app.callback(
-                [Output("InteractiveGraph", "figure")],
+                [Output("InteractiveGraph", "figure"),Output("debug_value","children")],
                 [Input("n-selection-slider", "value"), Input("MonthDropdown","value"), Input("time-window-slider", "value")],
             )
             def update_bank_sample_plot(n_value, dropdownValue, time_values):
@@ -210,7 +210,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                 graph.graph.data[0]['x'] = values_sample
                 graph.graph.data[0]['y'] = counts_sample
                 
-                return [ graph.graph ]      
+                return graph.graph, graph.graph      
             
                 
         else:
@@ -266,8 +266,10 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
         graphList + customGraphList,
         className="mt-12",
     )
+
+    DEBUG = html.Div(id='debug_value')
     
-    app.layout = html.Div(children=[NAVBAR, BODY])
+    app.layout = html.Div(children=[NAVBAR, BODY,DEBUG])
 
     
         
