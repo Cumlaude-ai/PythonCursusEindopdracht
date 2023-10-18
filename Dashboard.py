@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 from dash.dependencies import Output, Input, State
 import random
-from google.colab import output
+#from google.colab import output
 from dateutil import relativedelta
 import uuid
 import sys
@@ -273,4 +273,4 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
 
     
         
-    return app.run(jupyter_mode="external",debug=False), output.serve_kernel_port_as_iframe(8050)
+    return app.run(jupyter_mode="external",debug=False)#, output.serve_kernel_port_as_iframe(8050)
