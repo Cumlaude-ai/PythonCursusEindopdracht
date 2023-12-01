@@ -39,53 +39,60 @@ def make_marks_time_slider(mini, maxi):
             pass
         current += step
     return ret
-def dataFrameSize(dataframe, float_percent):
-        print("making a local_df data sample with float_percent: %s" % (float_percent))
-        return dataframe.sample(frac=float_percent, random_state=1,replace=True)
+def dataFrameSize(dataframe, float_percent, visualColumn):
+    #dataframe= pd.concat([pd.Series(xy[0]).reset_index(drop=True), pd.Series(xy[1]).reset_index(drop=True)], axis=1)
+    dataframe = dataframe.sample(frac=float_percent, random_state=1,replace=True)
+    grouped_monthYear_KNMI_df = dataframe.groupby(dataframe.index.year).mean()
+    return grouped_monthYear_KNMI_df.index, grouped_monthYear_KNMI_df[visualColumn]
     
 def time_slider_to_date(time_values):
     min_date = datetime.fromtimestamp(time_values[0]).strftime("%c")
     max_date = datetime.fromtimestamp(time_values[1]).strftime("%c")
     return [min_date, max_date]
 
-def calculate_bank_sample_data(dataframe, time_values):
+def calculate_datespan(xy, time_values):
+    dataframe= pd.concat([pd.Series(xy[0]).reset_index(drop=True), pd.Series(xy[1]).reset_index(drop=True)], axis=1)
+    dataframe.iloc[:, 0]  = pd.to_datetime(dataframe.iloc[:, 0], format='%Y')
     if time_values is not None:
         min_date = time_values[0]
         max_date = time_values[1]
         dataframe = dataframe[
-            (dataframe["Datum"] >= min_date)
-            & (dataframe["Datum"] <= max_date)
+            (dataframe.iloc[:, 0]  >= pd.to_datetime(min_date))
+            & (dataframe.iloc[:, 0] <= pd.to_datetime(max_date))
         ]
-    print(dataframe)
-    yearData = dataframe.groupby(dataframe.index.year).mean()
-    #years = yearData["Datum"].groups.keys()
-    #avgRain = yearData["Etmaalsom neerslag"].mean().round(0).astype(np.int64).tolist()
-    #return years, yearData["Etmaalsom neerslag"].mean()
-    print(yearData.index, yearData["Etmaalsom neerslag"])
-    return yearData.index, yearData["Etmaalsom neerslag"]
+    return dataframe.iloc[:, 0], dataframe.iloc[:, 1]
+    
+def calculate_filter(dataframe, filter,visualColumn):
+    dataframe = dataframe[dataframe["Datum"].dt.month == filter]
+    grouped_monthYear_KNMI_df = dataframe.groupby(dataframe.index.year).mean()
         
+    return grouped_monthYear_KNMI_df.index, grouped_monthYear_KNMI_df[visualColumn]
+    
 class interactiveGraph:
-    def __init__(self,title,graph):
+    def __init__(self,title,chartType,x,y,labels):
         self.title = title
-        self.graph = graph
+        self.chartType = chartType
+        self.x = x
+        self.y = y
+        self.labels = labels
         self.idlist = []
         self.configuration = []
-    def addTimeframeSlider(self,title, subtitle,min_date,max_date):
-        marks = make_marks_time_slider(min_date, max_date)
+    def addTimeframeSlider(self,title, subtitle,date_values):
+        marks = make_marks_time_slider(date_values.min(), date_values.max())
         min_epoch = list(marks.keys())[0]
         max_epoch = list(marks.keys())[-1]
         sliderID = str(uuid.uuid1())
         slider = [
             html.Label(title, className="lead"),
-            html.Div(dcc.RangeSlider(id="time-window-slider",marks=marks,min=min_epoch,max=max_epoch,step=(max_epoch - min_epoch) / (len(list(marks.keys())) * 3),value=[min_epoch, max_epoch])),
+            html.Div(dcc.RangeSlider(id=sliderID,marks=marks,min=min_epoch,max=max_epoch,step=(max_epoch - min_epoch) / (len(list(marks.keys())) * 3),value=[min_epoch, max_epoch])),
             html.P(
                 subtitle,
                 style={"fontSize": 10, "font-weight": "lighter","marginBottom": 40},
             ),
         ]
         self.configuration += slider
-        self.idlist.append({"id":"time-window-slider","type":"timeslider"})
-    def addPercentageSlider(self,title,subtitle, value):
+        self.idlist.append({"id":sliderID,"type":"timeslider", "data":date_values})
+    def addPercentageSlider(self,title,subtitle, dataframe,visualColumn):
         sliderID = str(uuid.uuid1())
         slider =  [
             html.Label(title, className="lead"),
@@ -94,7 +101,7 @@ class interactiveGraph:
                 style={"fontSize": 10, "font-weight": "lighter"},
             ),
             dcc.Slider(
-                id="n-selection-slider",
+                id=sliderID,
                 min=1,
                 max=100,
                 step=1,
@@ -111,12 +118,12 @@ class interactiveGraph:
                     90: "",
                     100: "100%",
                 },
-                value=value,
+                value=100,
             )
         ]
         self.configuration += slider
-        self.idlist.append({"id":"n-selection-slider","type":"percentageslider"})
-    def addDropdown(self,title,subtitle):
+        self.idlist.append({"id":sliderID,"type":"percentageslider","data":dataframe,"visualColumn":visualColumn})
+    def addDropdown(self,title,subtitle,dataframe,visualColumn):
         dropdownID = str(uuid.uuid1())
         ret=[]
         counter =0
@@ -134,13 +141,13 @@ class interactiveGraph:
             ),
         ]
         self.configuration += dropdown
-        self.idlist.append({"id":"MonthDropdown","type":"dropdown"})
+        self.idlist.append({"id":"MonthDropdown","type":"dropdown","data":dataframe,"visualColumn":visualColumn})
 class graph:
     def __init__(self,title,graph):
         self.title = title
         self.graph = graph
         
-def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
+def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Graphs):
     app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
     graphList = []
     customGraphList = []
@@ -170,7 +177,7 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
                                     color="warning",
                                     style={"display": "none"},
                                 ),
-                                dcc.Graph(id="InteractiveGraph",figure=graph.graph),
+                                dcc.Graph(id="InteractiveGraph",figure=graph.chartType(x=graph.x,y=graph.y,title=graph.title,labels=graph.labels)),
                             ],
                             type="default",
                         )
@@ -189,31 +196,38 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
             customGraphList += [customGraphObject]
             for configobject in graph.idlist:
                 if configobject["type"] == "dropdown":
-                    pass
+                    @app.callback(
+                        [Output("InteractiveGraph","figure",allow_duplicate=True)],
+                        [Input(configobject["id"], "value")],
+                        prevent_initial_call=True
+                    )
+                    def update_filter(dropdownValue):
+                        x, y = calculate_filter(configobject["data"], dropdownValue,configobject["visualColumn"])
+                        return [graph.chartType(x=x,y=y,title=graph.title,labels=graph.labels)]     
+                        
                 elif configobject["type"] == "percentageslider":
-                    pass
+                    @app.callback(
+                        [Output("InteractiveGraph","figure",allow_duplicate=True)],
+                        [Input(configobject["id"], "value")],
+                        prevent_initial_call=True
+                        
+                    )
+                    def update_datasize(percentagesize):
+                        dataFrameSizePercentage = float(percentagesize / 100)
+                        x, y = dataFrameSize(configobject["data"], dataFrameSizePercentage,configobject["visualColumn"])
+                        return [graph.chartType(x=x,y=y,title=graph.title,labels=graph.labels)]   
+                        
                 elif configobject["type"] == "timeslider":
-                    pass
-            
-            @app.callback(
-                [Output("InteractiveGraph","figure")],
-                [Input("n-selection-slider", "value"), Input("MonthDropdown","value"), Input("time-window-slider", "value")],
-            )
-            def update_bank_sample_plot(n_value, dropdownValue, time_values):
-                #sys.stdout = n_value + " / " + dropdownValue + " / " + time_values
-                #dataFrameSizePercentage = float(n_value / 100)
-                #local_df = dataFrameSize(Data[Data['Datum'].dt.month==dropdownValue], dataFrameSizePercentage)
-                min_date, max_date = time_slider_to_date(time_values)
-                values_sample, counts_sample = calculate_bank_sample_data(
-                    Data, [min_date, max_date]
-                )
-                
-                graph.graph.data[0]['x'] = values_sample
-                graph.graph.data[0]['y'] = counts_sample
-                
-                return graph.graph      
-            
-                
+                    @app.callback(
+                        [Output("InteractiveGraph","figure",allow_duplicate=True)],
+                        [Input(configobject["id"], "value")],
+                        prevent_initial_call=True
+                    )
+                    def update_timeslider(time_values):
+                        min_date, max_date = time_slider_to_date(time_values)
+                        x, y = calculate_datespan([graph.x,graph.y], [min_date, max_date])
+                        
+                        return [graph.chartType(x=x,y=y,title=graph.title,labels=graph.labels)]    
         else:
             GRAPH_PLOT = [
                 dbc.Card([
@@ -268,10 +282,25 @@ def createDashboard(Title,SiteUrl,LogoUrl,BackgroundUrl,Data,Graphs):
         className="mt-12",
     )
 
-    DEBUG = html.Div(id='debug_value')
+    WATERMARK = dbc.Container(
+        children=[
+            html.A(
+                dbc.Row(
+                    [
+                        dbc.Col(html.Img(src="https://github.com/Cumlaude-ai/Python_Cursus/blob/main/data/CumlaudeAI.png?raw=true", height="50px")),
+                    ],
+                    align="center",
+                ),
+                href="https://cumalaude.ai",
+                style={"text-decoration": "none"},
+            )
+        ],
+        style={"bottom":"0px","right":"50px","display": "flex","justify-content": "flex-end","background-color": "#ebebeb","width": "min-content","margin-left": "auto","margin-right": "50px","border-radius": "10px 10px 0px 0px","padding-top": "10px","opacity": "0.3","position":"fixed"},
+        className="watermark",
+    )
     
-    app.layout = html.Div(children=[NAVBAR, BODY,DEBUG])
+    app.layout = html.Div(children=[NAVBAR, BODY,WATERMARK])
 
     
         
-    return app.run(jupyter_mode="external",debug=True)#, output.serve_kernel_port_as_iframe(8050)
+    return app.run(jupyter_mode="external",debug=False)#, output.serve_kernel_port_as_iframe(8050)
