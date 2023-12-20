@@ -1,7 +1,3 @@
-Certainly! Here's a README file for your tool:
-
----
-
 # Interactive Dashboard Tool
 
 This tool is a versatile dashboard for visualizing and exploring time-series data, utilizing Matplotlib, Dash, Plotly, Pandas, and other libraries. It provides interactive graphs and filtering functionalities to analyze data effectively.
