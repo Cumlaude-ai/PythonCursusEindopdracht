@@ -1,24 +1,15 @@
-import pathlib
-import re
-import json
 from datetime import datetime
-import flask
 import dash
 import matplotlib.colors as mcolors
 import dash_bootstrap_components as dbc
-from dash import dash_table
 from dash import dcc
 from dash import html
+from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import plotly.express as px
 import pandas as pd
-import numpy as np
-from dash.dependencies import Output, Input, State
-import random
-#from google.colab import output
 from dateutil import relativedelta
 import uuid
-import sys
 
 def make_marks_time_slider(mini, maxi):
     step = relativedelta.relativedelta(months=+1)
